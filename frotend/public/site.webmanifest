@@ -1,0 +1,18 @@
+{
+  "name": "LUCINE",
+  "short_name": "LUCINE",
+  "description": "Thoughtfully chosen bags, jewellery, clothing and accessories.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8f5",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

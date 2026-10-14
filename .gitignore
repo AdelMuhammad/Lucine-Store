@@ -1,0 +1,33 @@
+# ---- OS / editor junk (applies to the whole monorepo) ----
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# ---- Node / Vite (the web app also has its own frotend/.gitignore) ----
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# ---- Environment files (never commit secrets) ----
+.env
+.env.*
+!.env.example
+
+# ---- Flutter / Dart build output ----
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/macos/Pods/
+mobile/linux/flutter/ephemeral/
+mobile/windows/flutter/ephemeral/
+
+# ---- Logs ----
+*.log
+logs/

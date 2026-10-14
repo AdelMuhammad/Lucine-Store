@@ -1,0 +1,13 @@
+/** Supabase data-access layer. */
+export * from './products'
+export * from './categories'
+export * from './orders'
+export * from './attributes'
+export * from './reviews'
+export * from './support'
+export * from './notifications'
+export * from './coupons'
+export * from './marketing'
+export * from './ops'
+export * from './suppliers'
+export { uploadProductImage, uploadProductImages } from './storage'

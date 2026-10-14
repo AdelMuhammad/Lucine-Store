@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Plus Jakarta Sans', 'Alexandria', sans-serif;
+  color: #1a1a1a;
+  background: #faf8f5;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --color-gold: #d4af37;
+  --color-gold-light: #e8c86b;
+  --color-gold-dark: #a38118;
+  --color-gold-contrast: #0f1b29;
+
+  --color-navy: #0f1b29;
+  --color-navy-light: #1e2d40;
+  --color-navy-dark: #090f18;
+  --color-navy-contrast: #ffffff;
+
+  --color-rose: #e5b8af;
+  --color-rose-light: #f7e4e0;
+  --color-rose-dark: #c48d82;
+
+  --color-background: #faf8f5;
+  --color-paper: #ffffff;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #757575;
+  --color-border: #eaeaea;
+  --color-error: #d32f2f;
+  --color-success: #56805e;
+  --color-surface-muted: #f3efe9;
+  --color-silver: #c5cbd1;
+  --color-tan: #a56f45;
+  --color-black: #242424;
+  --color-ivory: #e8e0d0;
+  --color-sage: #929b81;
+  --color-brown: #704b35;
+  --color-accent-bg: rgb(212 175 55 / 10%);
+
+  --checkout-content-max: 1280px;
+  --checkout-page-padding: 32px;
+  --checkout-page-gutter: 48px;
+  --checkout-section-space: 72px;
+  --checkout-heading-space: 38px;
+  --checkout-heading-gap: 8px;
+  --checkout-progress-space: 25px;
+  --checkout-progress-gap: 18px;
+  --checkout-step-size: 30px;
+  --checkout-connector-min: 22px;
+  --checkout-connector-max: 84px;
+  --checkout-layout-gap: 28px;
+  --checkout-summary-min: 350px;
+  --checkout-card-padding: 25px;
+  --checkout-summary-padding: 24px;
+  --checkout-card-gap: 21px;
+  --checkout-field-gap: 17px;
+  --checkout-label-gap: 7px;
+  --checkout-input-height: 48px;
+  --checkout-input-padding: 0 13px;
+  --checkout-input-radius: 4px;
+  --checkout-textarea-height: 86px;
+  --checkout-choice-height: 70px;
+  --checkout-choice-padding: 13px;
+  --checkout-radio-size: 16px;
+  --checkout-choice-icon-size: 34px;
+  --checkout-inline-gap: 11px;
+  --checkout-micro-gap: 4px;
+  --checkout-items-max-height: 410px;
+  --checkout-item-padding: 16px;
+  --checkout-product-image-size: 76px;
+  --checkout-badge-offset: 6px;
+  --checkout-badge-size: 21px;
+  --checkout-badge-padding: 5px;
+  --checkout-quantity-button-size: 28px;
+  --checkout-quantity-value-width: 23px;
+  --checkout-icon-padding: 6px;
+  --checkout-icon-size: 18px;
+  --checkout-tiny-icon-size: 14px;
+  --checkout-remove-padding: 4px 2px;
+  --checkout-underline-offset: 2px;
+  --checkout-sticky-top: 105px;
+  --checkout-submit-height: 52px;
+  --checkout-submit-padding: 0 16px;
+  --checkout-submit-padding-inline: 22px;
+  --checkout-empty-height: 570px;
+  --checkout-empty-padding: 32px;
+  --checkout-empty-icon-size: 84px;
+  --checkout-empty-icon-glyph: 34px;
+  --checkout-circle-radius: 50%;
+  --checkout-radius: 5px;
+  --checkout-section-title-size: 17px;
+  --checkout-title-size: 43px;
+  --checkout-total-text: 18px;
+  --checkout-input-text: 14px;
+  --checkout-small-text: 13px;
+  --checkout-tiny-text: 11px;
+  --checkout-eyebrow-size: 10px;
+  --checkout-letter-spacing: 0.12em;
+  --checkout-copy-line-height: 1.6;
+  --checkout-motion: 160ms ease;
+  --checkout-focus-width: 3px;
+
+  --checkout-mobile-page-top: 18px;
+  --checkout-mobile-page-bottom: 44px;
+  --checkout-mobile-page-gutter: 16px;
+  --checkout-mobile-heading-space: 24px;
+  --checkout-mobile-title-size: 34px;
+  --checkout-mobile-progress-gap: 8px;
+  --checkout-mobile-inline-gap: 8px;
+  --checkout-mobile-step-size: 25px;
+  --checkout-mobile-connector: 12px;
+  --checkout-step-label-width: 112px;
+  --checkout-mobile-card-padding: 17px;
+  --checkout-mobile-choice-padding: 10px;
+  --checkout-mobile-radio-size: 15px;
+  --checkout-mobile-choice-icon: 29px;
+  --checkout-summary-items-tablet: 300px;
+  --checkout-mobile-product-image: 64px;
+  --checkout-narrow-progress-gap: 5px;
+  --checkout-narrow-inline-gap: 5px;
+  --checkout-narrow-step-label-width: 86px;
+
+  --font-body: 'Plus Jakarta Sans', 'Alexandria', sans-serif;
+  --font-heading: 'Playfair Display', 'Alexandria', serif;
+
+  --radius: 12px;
+  --shadow:
+    0 10px 15px -3px rgb(15 27 41 / 10%),
+    0 4px 6px -2px rgb(15 27 41 / 5%);
+
+  --text: var(--color-text-secondary);
+  --text-h: var(--color-text-primary);
+  --bg: var(--color-background);
+  --border: var(--color-border);
+  --accent: var(--color-gold);
+  --accent-bg: rgb(212 175 55 / 10%);
+  --accent-border: rgb(212 175 55 / 50%);
+  --code-bg: var(--color-rose-light);
+  --social-bg: var(--color-rose-light);
+
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  scroll-behavior: smooth;
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  font-family: var(--font-body);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--color-gold-dark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-navy);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold-dark);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--color-navy);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+::selection {
+  color: var(--color-navy);
+  background: var(--color-rose-light);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/*
+ * Directional icons (arrows that imply left/right movement) should point the
+ * other way when the site is in Arabic so they always indicate the correct
+ * reading direction. Only icons explicitly marked with `.rtl-flip` are
+ * mirrored — logos and non-directional icons stay untouched.
+ */
+[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,20 @@
+# Lucine Store — https://adelmuhammad.github.io/Lucine-Store/
+# Generated defaults; the build rewrites the Sitemap line for the real host.
+
+User-agent: *
+Allow: /
+
+# Private / transactional areas — nothing here should be indexed.
+Disallow: /admin
+Disallow: /admin/
+Disallow: /account
+Disallow: /account/
+Disallow: /checkout
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+
+# Let crawlers fetch the render-critical assets.
+Allow: /assets/
+
+Sitemap: https://adelmuhammad.github.io/Lucine-Store/sitemap.xml
