@@ -21,7 +21,7 @@ const distDir = join(root, 'dist')
 
 const BRAND = 'LUCINE'
 const LEGAL_NAME = 'Lucine Store'
-const DEFAULT_ORIGIN = 'https://adelmuhammad.github.io'
+const DEFAULT_ORIGIN = 'https://lucinestore.github.io'
 const OG_IMAGE = 'og-default.png'
 
 // --- Environment -------------------------------------------------------------

@@ -172,7 +172,7 @@ Configure the public origin so canonical URLs never depend on the host the HTML
 happens to be served from:
 
 ```bash
-VITE_SITE_URL=https://adelmuhammad.github.io/Lucine-Store/
+VITE_SITE_URL=https://lucinestore.github.io/
 ```
 
 When it is left empty the build derives the URL from the Vite base path (which
@@ -182,21 +182,21 @@ image (`public/og-default.png`, 1200×630) is generated without any dependency b
 
 ## GitHub Pages deployment
 
-The repository deploys the frontend to
-[`https://adelmuhammad.github.io/Lucine-Store/`](https://adelmuhammad.github.io/Lucine-Store/)
+The frontend deploys to
+[`https://lucinestore.github.io/`](https://lucinestore.github.io/)
 whenever changes are pushed to `master`. In the repository's **Settings →
 Pages**, set the build and deployment source to **GitHub Actions**.
 
-The Pages workflow builds this frontend and publishes it with the repository
-path configured as the Vite base URL. Routes are supported on refresh through
-the generated `404.html` fallback. To connect the Supabase backend, add
-`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as repository Actions secrets;
-without them, the app uses its local seed data.
+The Pages workflow builds this frontend and publishes it at the domain root as
+the `lucinestore` organisation page, so the Vite base URL is `/`. Routes are
+supported on refresh through the generated `404.html` fallback. To connect the
+Supabase backend, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as
+repository Actions secrets; without them, the app uses its local seed data.
 
-GitHub's free `github.io` hostname is tied to the account name and cannot be
-renamed to a store brand. The project name (`Lucine-Store`) appears after the
-hostname; using a branded domain such as `lucinestore.com` requires owning that
-domain.
+The site is hosted on GitHub's free `github.io` hostname, owned by a free
+GitHub organisation named `lucinestore`, so no personal account name appears in
+the URL. Using a fully branded domain such as `lucinestore.com` would require
+owning that domain.
 
 ## Commands
 

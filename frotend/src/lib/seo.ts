@@ -25,7 +25,7 @@ export const SITE = {
 } as const
 
 /** Fallback used when neither `VITE_SITE_URL` nor `window` is available. */
-const FALLBACK_SITE_URL = 'https://adelmuhammad.github.io/Lucine-Store/'
+const FALLBACK_SITE_URL = 'https://lucinestore.github.io/'
 
 function withTrailingSlash(value: string): string {
   return value.endsWith('/') ? value : `${value}/`

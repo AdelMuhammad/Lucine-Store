@@ -1,4 +1,4 @@
-# Lucine Store — https://adelmuhammad.github.io/Lucine-Store/
+# Lucine Store — https://lucinestore.github.io/
 # Generated defaults; the build rewrites the Sitemap line for the real host.
 
 User-agent: *
@@ -17,4 +17,4 @@ Disallow: /forgot-password
 # Let crawlers fetch the render-critical assets.
 Allow: /assets/
 
-Sitemap: https://adelmuhammad.github.io/Lucine-Store/sitemap.xml
+Sitemap: https://lucinestore.github.io/sitemap.xml
