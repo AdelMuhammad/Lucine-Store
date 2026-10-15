@@ -6,10 +6,13 @@ import {
   EditOutlined,
   PowerSettingsNewOutlined,
   Search,
+  VisibilityOutlined,
 } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 import AdminModal from '../../admin/components/AdminModal'
 import AdminPageHeader from '../../admin/components/AdminPageHeader'
 import { useTranslation } from '../../../hooks/useTranslation'
+import { useProductStore } from '../../products/store/useProductStore'
 import { newOpsId, nowIso } from '../ops'
 import {
   useSupplierStore,
@@ -68,9 +71,14 @@ function draftFrom(supplier: Supplier): SupplierDraft {
 function SuppliersAdminPage() {
   const { t, localized, number } = useTranslation()
   const suppliers = useSupplierStore((state) => state.suppliers)
+  const products = useProductStore((state) => state.products)
   const addSupplier = useSupplierStore((state) => state.addSupplier)
   const updateSupplier = useSupplierStore((state) => state.updateSupplier)
   const removeSupplier = useSupplierStore((state) => state.removeSupplier)
+
+  /** How many catalogue products point at this supplier. */
+  const productCount = (supplierId: string) =>
+    products.filter((product) => product.supplierId === supplierId).length
 
   const [editing, setEditing] = useState<Supplier | 'new' | null>(null)
   const [draft, setDraft] = useState<SupplierDraft>(emptyDraft)
@@ -219,6 +227,7 @@ function SuppliersAdminPage() {
               <thead>
                 <tr>
                   <th>{t('admin.thSupplier')}</th>
+                  <th>{t('admin.thProductsOffered')}</th>
                   <th>{t('admin.thContact')}</th>
                   <th>{t('admin.thCity')}</th>
                   <th>{t('admin.thPaymentTerms')}</th>
@@ -232,7 +241,9 @@ function SuppliersAdminPage() {
                     <td data-label={t('admin.thSupplier')}>
                       <div className="admin-table__primary">
                         <strong>
-                          {localized(supplier.name, supplier.name_ar)}
+                          <Link to={`/admin/ops/suppliers/${supplier.id}`}>
+                            {localized(supplier.name, supplier.name_ar)}
+                          </Link>
                         </strong>
                         {supplier.taxId && (
                           <span>
@@ -240,6 +251,16 @@ function SuppliersAdminPage() {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td data-label={t('admin.thProductsOffered')}>
+                      <Link
+                        className="admin-badge admin-badge--neutral"
+                        to={`/admin/ops/suppliers/${supplier.id}`}
+                      >
+                        {t('admin.supplierProductCount', {
+                          count: number(productCount(supplier.id)),
+                        })}
+                      </Link>
                     </td>
                     <td data-label={t('admin.thContact')}>
                       <div className="admin-table__primary">
@@ -274,6 +295,14 @@ function SuppliersAdminPage() {
                     </td>
                     <td data-label={t('admin.thActions')}>
                       <div className="admin-table__actions">
+                        <Link
+                          aria-label={t('admin.viewSupplier')}
+                          className="admin-icon-btn"
+                          title={t('admin.viewSupplier')}
+                          to={`/admin/ops/suppliers/${supplier.id}`}
+                        >
+                          <VisibilityOutlined />
+                        </Link>
                         <button
                           aria-label={t(
                             supplier.isActive

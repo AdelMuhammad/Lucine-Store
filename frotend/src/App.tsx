@@ -108,6 +108,9 @@ const AdminSettingsPage = lazy(
 const AdminSuppliersPage = lazy(
   () => import('./features/ops/pages/SuppliersAdminPage'),
 )
+const AdminSupplierDetailPage = lazy(
+  () => import('./features/ops/pages/SupplierDetailAdminPage'),
+)
 const AdminPurchaseOrdersPage = lazy(
   () => import('./features/ops/pages/PurchaseOrdersAdminPage'),
 )
@@ -515,6 +518,14 @@ function App() {
             </AdminLoader>
           }
           path="ops/suppliers"
+        />
+        <Route
+          element={
+            <AdminLoader>
+              <AdminSupplierDetailPage />
+            </AdminLoader>
+          }
+          path="ops/suppliers/:supplierId"
         />
         <Route
           element={
