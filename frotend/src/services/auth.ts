@@ -1,5 +1,8 @@
-import { supabase } from '../lib/supabase'
+import { authRedirectUrl, supabase } from '../lib/supabase'
 import { asString } from './mappers'
+
+/** Route Supabase auth emails return the customer to after confirmation/reset. */
+export const AUTH_CALLBACK_PATH = '/auth/verify'
 
 /** Roles the store supports — drives what a signed-in user may see. */
 export type AuthRole = 'customer' | 'admin'
@@ -113,7 +116,13 @@ export async function signUpWithEmail(
   const { data, error } = await supabase.auth.signUp({
     email: email.trim(),
     password,
-    options: { data: { full_name: fullName.trim() } },
+    options: {
+      data: { full_name: fullName.trim() },
+      // Send the confirmation link to the deployed store (or whatever
+      // `VITE_AUTH_REDIRECT_URL`/`VITE_SITE_URL` points at) instead of the
+      // Supabase project's default Site URL, which is localhost in testing.
+      emailRedirectTo: authRedirectUrl(AUTH_CALLBACK_PATH),
+    },
   })
 
   if (error) {
@@ -135,8 +144,38 @@ export async function resetPasswordForEmail(
   if (!supabase) return { error: 'no-backend', data: null }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: window.location.origin + '/login',
+    redirectTo: authRedirectUrl(AUTH_CALLBACK_PATH),
   })
+  return {
+    error: error ? classifyAuthError(error.message) : '',
+    data: null,
+  }
+}
+
+/** Re-sends the sign-up confirmation email. */
+export async function resendConfirmationEmail(
+  email: string,
+): Promise<AuthResult<null>> {
+  if (!supabase) return { error: 'no-backend', data: null }
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim(),
+    options: { emailRedirectTo: authRedirectUrl(AUTH_CALLBACK_PATH) },
+  })
+  return {
+    error: error ? classifyAuthError(error.message) : '',
+    data: null,
+  }
+}
+
+/** Sets a new password for the signed-in user (used by the reset flow). */
+export async function updatePassword(
+  password: string,
+): Promise<AuthResult<null>> {
+  if (!supabase) return { error: 'no-backend', data: null }
+
+  const { error } = await supabase.auth.updateUser({ password })
   return {
     error: error ? classifyAuthError(error.message) : '',
     data: null,
@@ -202,6 +241,12 @@ function classifyAuthError(message: string): string {
   }
   if (normalized.includes('rate limit')) return 'rate-limit'
   if (normalized.includes('email not confirmed')) return 'email-unconfirmed'
+  if (
+    normalized.includes('expired') ||
+    (normalized.includes('invalid') && normalized.includes('token'))
+  ) {
+    return 'link-expired'
+  }
   if (normalized.includes('network') || normalized.includes('fetch')) {
     return 'network'
   }

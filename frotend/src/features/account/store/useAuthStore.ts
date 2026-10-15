@@ -31,6 +31,8 @@ type AuthState = {
   signUp: (input: SignUpInput) => Promise<SignUpOutcome>
   signIn: (input: SignInInput) => Promise<boolean>
   resetPassword: (email: string) => Promise<boolean>
+  resendConfirmation: (email: string) => Promise<boolean>
+  updatePassword: (password: string) => Promise<boolean>
   updateUser: (patch: { fullName?: string; phone?: string; birthday?: string }) => Promise<void>
   signOut: () => Promise<void>
   continueAsGuest: () => void
@@ -178,6 +180,26 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   resetPassword: async (email) => {
     set({ error: '' })
     const result = await authService.resetPasswordForEmail(email)
+    if (result.error) {
+      set({ error: result.error })
+      return false
+    }
+    return true
+  },
+
+  resendConfirmation: async (email) => {
+    set({ error: '' })
+    const result = await authService.resendConfirmationEmail(email)
+    if (result.error) {
+      set({ error: result.error })
+      return false
+    }
+    return true
+  },
+
+  updatePassword: async (password) => {
+    set({ error: '' })
+    const result = await authService.updatePassword(password)
     if (result.error) {
       set({ error: result.error })
       return false
