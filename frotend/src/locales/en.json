@@ -1084,6 +1084,7 @@
     "userErrorNetwork": "Network error. Check your connection and try again.",
     "userErrorGeneric": "Could not create the user.",
     "backToUsers": "Back to users",
+    "backToCustomers": "Back to customers",
     "viewUser": "View user",
     "userDetailEyebrow": "User",
     "userDetailDescription": "Account details, orders, favourite products and addresses.",

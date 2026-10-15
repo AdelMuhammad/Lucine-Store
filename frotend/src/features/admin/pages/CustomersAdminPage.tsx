@@ -5,8 +5,9 @@ import {
   PeopleAltOutlined,
   PersonOutlined,
   SearchOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAccountStore } from '../../account/store/useAccountStore'
 import { deriveCustomerRows } from '../../account/customerRows'
 import { useProductStore } from '../../products/store/useProductStore'
@@ -26,8 +27,14 @@ function CustomersAdminPage() {
   const savedProductIds = useWishlistStore((state) => state.savedProductIds)
   const [search, setSearch] = useState('')
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const customers = useMemo(() => deriveCustomerRows(orders), [orders])
+
+  /** Opens this customer's full detail page (works for guest checkouts too). */
+  function openCustomer(key: string) {
+    if (key) navigate(`/admin/users/${encodeURIComponent(key)}`)
+  }
 
   const query = search.trim().toLocaleLowerCase()
   const filteredCustomers = customers.filter(
@@ -111,9 +118,19 @@ function CustomersAdminPage() {
               const isOpen = expandedKey === customer.key
               return (
                 <div key={customer.key}>
-                  <div className="admin-row">
+                  <div
+                    className="admin-row admin-clickable-row"
+                    onClick={() => openCustomer(customer.key)}
+                  >
                     <div className="admin-row__main">
-                      <strong>{customer.name || t('admin.guestCustomer')}</strong>
+                      <strong>
+                        <Link
+                          onClick={(event) => event.stopPropagation()}
+                          to={`/admin/users/${encodeURIComponent(customer.key)}`}
+                        >
+                          {customer.name || t('admin.guestCustomer')}
+                        </Link>
+                      </strong>
                       <span>
                         {customer.email || t('admin.noEmail')} ·{' '}
                         {customer.phone || t('admin.noPhone')}
@@ -128,12 +145,26 @@ function CustomersAdminPage() {
                       <span className="admin-badge admin-badge--success">
                         {currency(customer.totalSpent)}
                       </span>
+                      <Link
+                        aria-label={t('admin.viewAria', {
+                          name: customer.name || customer.email,
+                        })}
+                        className="admin-icon-btn"
+                        onClick={(event) => event.stopPropagation()}
+                        title={t('admin.viewAria', {
+                          name: customer.name || customer.email,
+                        })}
+                        to={`/admin/users/${encodeURIComponent(customer.key)}`}
+                      >
+                        <VisibilityOutlined />
+                      </Link>
                       <button
                         aria-expanded={isOpen}
                         className="admin-btn admin-btn--sm"
-                        onClick={() =>
+                        onClick={(event) => {
+                          event.stopPropagation()
                           setExpandedKey(isOpen ? null : customer.key)
-                        }
+                        }}
                         type="button"
                       >
                         {isOpen ? t('admin.hide') : t('admin.orders')}

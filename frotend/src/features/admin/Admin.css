@@ -809,6 +809,16 @@
   background: rgb(212 175 55 / 5%);
 }
 
+/* Rows that open a detail view on click; the link inside keeps it keyboard
+   accessible, so this only adds the pointer affordance. */
+.admin-clickable-row {
+  cursor: pointer;
+}
+
+.admin-clickable-row:hover {
+  background: rgb(212 175 55 / 5%);
+}
+
 .admin-table__actions {
   display: flex;
   gap: 8px;

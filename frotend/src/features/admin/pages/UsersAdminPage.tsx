@@ -5,7 +5,7 @@ import {
   Search,
   VisibilityOutlined,
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAccountStore } from '../../account/store/useAccountStore'
 import type { AuthRole } from '../../../services/auth'
 import AdminModal from '../components/AdminModal'
@@ -52,6 +52,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function UsersAdminPage() {
   const { t, number, date, currency } = useTranslation()
+  const navigate = useNavigate()
   const users = useAdminUsersStore((state) => state.users)
   const status = useAdminUsersStore((state) => state.status)
   const hydrate = useAdminUsersStore((state) => state.hydrate)
@@ -104,6 +105,11 @@ function UsersAdminPage() {
 
   function update<K extends keyof UserDraft>(key: K, value: UserDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  /** Opens a user's detail page; ignores rows without an id. */
+  function openUser(userId: string) {
+    if (userId) navigate(`/admin/users/${userId}`)
   }
 
   function openCreate() {
@@ -253,11 +259,18 @@ function UsersAdminPage() {
                       )
                       const name = user.fullName || user.email
                       return (
-                        <tr key={user.id}>
+                        <tr
+                          className="admin-clickable-row"
+                          key={user.id}
+                          onClick={() => openUser(user.id)}
+                        >
                           <td data-label={t('admin.thUser')}>
                             <div className="admin-table__primary">
                               <strong>
-                                <Link to={`/admin/users/${user.id}`}>
+                                <Link
+                                  onClick={(event) => event.stopPropagation()}
+                                  to={`/admin/users/${user.id}`}
+                                >
                                   {name}
                                 </Link>
                               </strong>
@@ -308,6 +321,7 @@ function UsersAdminPage() {
                               <Link
                                 aria-label={t('admin.viewUser')}
                                 className="admin-icon-btn"
+                                onClick={(event) => event.stopPropagation()}
                                 title={t('admin.viewUser')}
                                 to={`/admin/users/${user.id}`}
                               >

@@ -15,6 +15,7 @@ import {
   StorefrontOutlined,
 } from '@mui/icons-material'
 import { Link, useParams } from 'react-router-dom'
+import { customerKeyFor } from '../../account/customerRows'
 import { useAccountStore, type CustomerOrder } from '../../account/store/useAccountStore'
 import AdminPageHeader from '../components/AdminPageHeader'
 import { orderNumber, orderStatusVariant } from '../format'
@@ -32,6 +33,13 @@ type FavouriteProduct = {
   quantity: number
   spend: number
 }
+
+/**
+ * `profiles.user_id` values, which is how the Users list links here; anything
+ * else in the route is a customer key coming from the Customers list.
+ */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Splits a stored order address into display lines. */
 function addressLines(address: CustomerOrder['address']): string[] {
@@ -77,23 +85,53 @@ function UserDetailAdminPage() {
     if (users.length === 0) void hydrate()
   }, [hydrate, users.length])
 
-  const user = users.find((entry) => entry.id === userId)
+  /**
+   * The route param is either a `profiles.user_id` (from the Users list) or a
+   * customer key — email / phone / name — (from the Customers list), so a
+   * checkout without an account can still open this page from its orders.
+   * When it is an email we also look the profile up by email, so a registered
+   * customer keeps their role, birthday and join date.
+   */
+  const param = (userId ?? '').trim()
+  const paramKey = param.toLocaleLowerCase()
+  const profile = useMemo(
+    () =>
+      users.find((entry) => entry.id === param) ??
+      (paramKey.includes('@')
+        ? users.find(
+            (entry) => entry.email.trim().toLocaleLowerCase() === paramKey,
+          )
+        : undefined),
+    [users, param, paramKey],
+  )
 
   const accountOrders = useMemo(() => {
-    if (!user) return []
-    const email = user.email.trim().toLocaleLowerCase()
-    const phone = user.phone.trim()
-    return orders
-      .filter((order) => {
-        const orderEmail = order.email.trim().toLocaleLowerCase()
-        if (email && orderEmail === email) return true
-        if (!email && phone && order.phone.trim() === phone) return true
-        return false
-      })
-      .toSorted((first, second) =>
+    if (!paramKey) return []
+
+    const newest = (list: CustomerOrder[]) =>
+      list.toSorted((first, second) =>
         second.createdAt.localeCompare(first.createdAt),
       )
-  }, [orders, user])
+
+    if (profile) {
+      const email = profile.email.trim().toLocaleLowerCase()
+      const phone = profile.phone.trim()
+      return newest(
+        orders.filter((order) => {
+          const orderEmail = order.email.trim().toLocaleLowerCase()
+          if (email && orderEmail === email) return true
+          if (!email && phone && order.phone.trim() === phone) return true
+          return false
+        }),
+      )
+    }
+
+    return newest(
+      orders.filter(
+        (order) => customerKeyFor(order).toLocaleLowerCase() === paramKey,
+      ),
+    )
+  }, [orders, profile, paramKey])
 
   const favourites = useMemo<FavouriteProduct[]>(() => {
     const map = new Map<string, FavouriteProduct>()
@@ -142,13 +180,18 @@ function UserDetailAdminPage() {
     return result
   }, [accountOrders])
 
+  // The Users list links by profile id while the Customers list links by
+  // customer key, so we can tell which section this visit came from and send
+  // the back button there.
+  const backTo = UUID_PATTERN.test(param) ? '/admin/users' : '/admin/customers'
   const backLink = (
-    <Link className="admin-btn admin-btn--sm" to="/admin/users">
-      <ArrowBack className="rtl-flip" /> {t('admin.backToUsers')}
+    <Link className="admin-btn admin-btn--sm" to={backTo}>
+      <ArrowBack className="rtl-flip" />{' '}
+      {t(backTo === '/admin/customers' ? 'admin.backToCustomers' : 'admin.backToUsers')}
     </Link>
   )
 
-  if (!user) {
+  if (!profile && accountOrders.length === 0) {
     // On a deep link the store starts `idle` with no rows yet — treat both
     // `idle` and `loading` as "still fetching" so we never flash "not found".
     const isLoading =
@@ -195,7 +238,20 @@ function UserDetailAdminPage() {
     )
   }
 
-  const name = user.fullName || user.email || t('admin.guestCustomer')
+  const latestOrder = accountOrders[0]
+  const orderName = latestOrder
+    ? [latestOrder.address.firstName, latestOrder.address.lastName]
+        .filter(Boolean)
+        .join(' ')
+    : ''
+  const name =
+    profile?.fullName ||
+    orderName ||
+    profile?.email ||
+    latestOrder?.email ||
+    t('admin.guestCustomer')
+  const email = profile?.email || latestOrder?.email || ''
+  const phone = profile?.phone || latestOrder?.phone || ''
 
   const activeOrders = accountOrders.filter(
     (order) => order.status !== 'cancelled',
@@ -216,15 +272,17 @@ function UserDetailAdminPage() {
 
       <AdminPageHeader
         actions={
-          <span
-            className={`admin-badge admin-badge--${
-              user.role === 'admin' ? 'info' : 'neutral'
-            }`}
-          >
-            {user.role === 'admin'
-              ? t('admin.roleAdmin')
-              : t('admin.roleCustomer')}
-          </span>
+          profile ? (
+            <span
+              className={`admin-badge admin-badge--${
+                profile.role === 'admin' ? 'info' : 'neutral'
+              }`}
+            >
+              {profile.role === 'admin'
+                ? t('admin.roleAdmin')
+                : t('admin.roleCustomer')}
+            </span>
+          ) : null
         }
         description={t('admin.userDetailDescription')}
         eyebrow={t('admin.userDetailEyebrow')}
@@ -459,7 +517,7 @@ function UserDetailAdminPage() {
                     style={{ color: 'var(--color-gold-dark)' }}
                   />
                   <div className="admin-row__main">
-                    <strong>{user.email || t('admin.noEmail')}</strong>
+                    <strong>{email || t('admin.noEmail')}</strong>
                     <span>{t('admin.miniEmail')}</span>
                   </div>
                 </div>
@@ -469,58 +527,66 @@ function UserDetailAdminPage() {
                     style={{ color: 'var(--color-gold-dark)' }}
                   />
                   <div className="admin-row__main">
-                    <strong>{user.phone || t('admin.noPhone')}</strong>
+                    <strong>{phone || t('admin.noPhone')}</strong>
                     <span>{t('admin.thPhone')}</span>
                   </div>
                 </div>
 
-                <div className="admin-row" style={{ padding: 0 }}>
-                  <CakeOutlined
-                    style={{ color: 'var(--color-gold-dark)' }}
-                  />
-                  <div className="admin-row__main">
-                    <strong>{user.birthday || t('common.notSet')}</strong>
-                    <span>{t('admin.userFieldBirthday')}</span>
+                {profile && (
+                  <div className="admin-row" style={{ padding: 0 }}>
+                    <CakeOutlined
+                      style={{ color: 'var(--color-gold-dark)' }}
+                    />
+                    <div className="admin-row__main">
+                      <strong>{profile.birthday || t('common.notSet')}</strong>
+                      <span>{t('admin.userFieldBirthday')}</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="admin-row" style={{ padding: 0 }}>
-                  <BadgeOutlined
-                    style={{ color: 'var(--color-gold-dark)' }}
-                  />
-                  <div className="admin-row__main">
-                    <strong>
-                      {user.role === 'admin'
-                        ? t('admin.roleAdmin')
-                        : t('admin.roleCustomer')}
-                    </strong>
-                    <span>{t('admin.thRole')}</span>
+                {profile && (
+                  <div className="admin-row" style={{ padding: 0 }}>
+                    <BadgeOutlined
+                      style={{ color: 'var(--color-gold-dark)' }}
+                    />
+                    <div className="admin-row__main">
+                      <strong>
+                        {profile.role === 'admin'
+                          ? t('admin.roleAdmin')
+                          : t('admin.roleCustomer')}
+                      </strong>
+                      <span>{t('admin.thRole')}</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="admin-row" style={{ padding: 0 }}>
-                  <CalendarMonthOutlined
-                    style={{ color: 'var(--color-gold-dark)' }}
-                  />
-                  <div className="admin-row__main">
-                    <strong>
-                      {user.createdAt
-                        ? date(user.createdAt, 'short')
-                        : t('common.notSet')}
-                    </strong>
-                    <span>{t('admin.thJoined')}</span>
+                {profile && (
+                  <div className="admin-row" style={{ padding: 0 }}>
+                    <CalendarMonthOutlined
+                      style={{ color: 'var(--color-gold-dark)' }}
+                    />
+                    <div className="admin-row__main">
+                      <strong>
+                        {profile.createdAt
+                          ? date(profile.createdAt, 'short')
+                          : t('common.notSet')}
+                      </strong>
+                      <span>{t('admin.thJoined')}</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="admin-row" style={{ padding: 0 }}>
-                  <ShoppingBagOutlined
-                    style={{ color: 'var(--color-gold-dark)' }}
-                  />
-                  <div className="admin-row__main">
-                    <strong>{user.id}</strong>
-                    <span>{t('admin.userFieldUserId')}</span>
+                {profile && (
+                  <div className="admin-row" style={{ padding: 0 }}>
+                    <ShoppingBagOutlined
+                      style={{ color: 'var(--color-gold-dark)' }}
+                    />
+                    <div className="admin-row__main">
+                      <strong>{profile.id}</strong>
+                      <span>{t('admin.userFieldUserId')}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </section>

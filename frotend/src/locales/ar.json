@@ -1084,6 +1084,7 @@
     "userErrorNetwork": "خطأ في الشبكة. تحقّق من اتصالك وحاول مرة أخرى.",
     "userErrorGeneric": "تعذّر إنشاء المستخدم.",
     "backToUsers": "رجوع إلى المستخدمين",
+    "backToCustomers": "رجوع إلى العملاء",
     "viewUser": "عرض المستخدم",
     "userDetailEyebrow": "مستخدم",
     "userDetailDescription": "بيانات الحساب والطلبات والمنتجات المفضلة والعناوين.",
