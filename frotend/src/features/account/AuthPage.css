@@ -111,6 +111,49 @@
   background: var(--color-gold-light);
 }
 
+.auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-alert {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.auth-alert--error {
+  border-color: #e3b0ab;
+  color: #8c2c22;
+  background: #fdf1ef;
+}
+
+.auth-alert--success {
+  border-color: #b8d8bd;
+  color: #256b31;
+  background: #f0f8f1;
+}
+
+.auth-confirm {
+  margin-top: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.auth-confirm__email {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  color: var(--color-navy);
+  font-size: 0.82rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
 .auth-card__switch {
   margin-top: 18px;
   display: flex;

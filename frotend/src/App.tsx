@@ -5,6 +5,7 @@ import AccountPage from './features/account/AccountPage'
 import OrderTrackingPage from './features/account/OrderTrackingPage'
 import AboutPage from './features/about/AboutPage'
 import AuthPage from './features/account/AuthPage'
+import VerifyEmailPage from './features/account/VerifyEmailPage'
 import RewardsPage from './features/account/RewardsPage'
 import DiscountsPage from './features/products/DiscountsPage'
 import HomePage from './features/home/HomePage'
@@ -262,6 +263,7 @@ function App() {
         <Route element={<AuthPage />} path="login" />
         <Route element={<AuthPage />} path="signup" />
         <Route element={<AuthPage />} path="forgot-password" />
+        <Route element={<VerifyEmailPage />} path="auth/verify" />
         <Route element={<AboutPage />} path="about" />
         <Route
           element={
