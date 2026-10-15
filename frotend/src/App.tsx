@@ -23,6 +23,7 @@ import { useOpsSettingsStore } from './features/ops/store/useOpsSettingsStore'
 import { useSupplierStore } from './features/ops/store/useSupplierStore'
 import { useDeliveryStore } from './features/ops/store/useDeliveryStore'
 import { useAccountStore } from './features/account/store/useAccountStore'
+import { useAccountStore as useAccountingStore } from './features/accounts/store/useAccountStore'
 import { useAttributeStore } from './features/products/store/useAttributeStore'
 import { useReviewStore } from './features/products/store/useReviewStore'
 import { useSupportStore } from './features/support/store/useSupportStore'
@@ -219,6 +220,15 @@ function App() {
       void useAccountStore
         .getState()
         .hydrateOrders(authUser?.role === 'admin' ? undefined : authUser?.id)
+
+      // Accounting data is admin-only (RLS gates reads), so only load it for
+      // admins to avoid pointless requests for shoppers.
+      if (authUser?.role === 'admin') {
+        void useAccountingStore.getState().fetchAccounts()
+        void useAccountingStore.getState().fetchJournals()
+        void useAccountingStore.getState().fetchExpenses()
+        void useAccountingStore.getState().fetchPayments()
+      }
     }
     void hydrateApp()
   }, [])

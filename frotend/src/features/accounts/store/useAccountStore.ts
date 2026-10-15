@@ -16,7 +16,15 @@ export const useAccountStore = create(
         try {
           const { fetchAccounts } = await import('../../../services/accounts')
           const rows = await fetchAccounts()
-          set({ accounts: rows as any })
+          set({
+            accounts: rows.map((row) => ({
+              code: row.code,
+              name: row.name,
+              name_ar: row.name_ar,
+              type: row.type,
+              isActive: row.is_active !== false,
+            })),
+          })
         } catch {
           set({ accounts: [] })
         }
@@ -68,7 +76,27 @@ export const useAccountStore = create(
         try {
           const { fetchJournalEntries } = await import('../../../services/accounts')
           const rows = await fetchJournalEntries()
-          set({ journals: rows as any })
+          set({
+            journals: rows.map((row) => {
+              const lines = Array.isArray(row.lines) ? row.lines : []
+              const debit = lines.reduce(
+                (sum: number, line: any) => sum + (Number(line?.debit) || 0),
+                0,
+              )
+              const credit = lines.reduce(
+                (sum: number, line: any) => sum + (Number(line?.credit) || 0),
+                0,
+              )
+              return {
+                id: row.id,
+                ref: row.source_id,
+                date: row.entry_date,
+                description: row.memo,
+                debit,
+                credit,
+              }
+            }),
+          })
         } catch {
           set({ journals: [] })
         }
@@ -78,10 +106,10 @@ export const useAccountStore = create(
         try {
           const { saveJournalEntry } = await import('../../../services/accounts')
           await saveJournalEntry({
+            id: entry.id,
             entry_date: entry.entry_date ?? entry.date ?? new Date().toISOString().split('T')[0],
             description: entry.description,
-            description_ar: entry.description_ar ?? '',
-            source_type: entry.source_type ?? entry.ref ?? 'manual',
+            source_type: entry.source_type ?? 'manual',
             source_id: entry.source_id ?? entry.ref ?? entry.id ?? '',
             lines: entry.lines ?? [],
           })
@@ -104,7 +132,15 @@ export const useAccountStore = create(
         try {
           const { fetchExpenses } = await import('../../../services/accounts')
           const rows = await fetchExpenses()
-          set({ expenses: rows as any })
+          set({
+            expenses: rows.map((row) => ({
+              id: row.id,
+              vendor: row.description,
+              category: row.category,
+              date: row.expense_date,
+              amount: row.amount,
+            })),
+          })
         } catch {
           set({ expenses: [] })
         }
@@ -114,14 +150,14 @@ export const useAccountStore = create(
         try {
           const { saveExpense } = await import('../../../services/accounts')
           await saveExpense({
+            id: expense.id,
             expense_date: expense.expense_date ?? expense.date ?? new Date().toISOString().split('T')[0],
             description: expense.description ?? expense.vendor ?? '',
-            description_ar: expense.description_ar ?? '',
             category: expense.category ?? 'other',
             amount: Number(expense.amount) || 0,
-            payment_method: expense.payment_method ?? expense.method ?? 'cash',
-            reference: expense.reference ?? expense.id ?? '',
+            method: expense.method ?? expense.payment_method ?? 'cash',
             notes: expense.notes ?? '',
+            supplier_id: expense.supplier_id,
           })
         } catch (error) {
           console.error('[supabase] failed to persist expense', error)
@@ -142,7 +178,15 @@ export const useAccountStore = create(
         try {
           const { fetchPayments } = await import('../../../services/accounts')
           const rows = await fetchPayments()
-          set({ payments: rows as any })
+          set({
+            payments: rows.map((row) => ({
+              id: row.id,
+              customer: row.party_name || row.notes,
+              method: row.method,
+              date: row.paid_at,
+              amount: row.amount,
+            })),
+          })
         } catch {
           set({ payments: [] })
         }
@@ -152,10 +196,12 @@ export const useAccountStore = create(
         try {
           const { savePayment } = await import('../../../services/accounts')
           await savePayment({
-            payment_date: payment.payment_date ?? payment.date ?? new Date().toISOString().split('T')[0],
+            id: payment.id,
+            party_name: payment.party_name ?? payment.customer ?? '',
+            paid_at: payment.paid_at ?? payment.date ?? new Date().toISOString().split('T')[0],
             amount: Number(payment.amount) || 0,
             kind: payment.kind ?? 'customer',
-            payment_method: payment.payment_method ?? payment.method ?? 'cash',
+            method: payment.method ?? payment.payment_method ?? 'cash',
             order_id: payment.order_id ?? payment.ref ?? '',
             supplier_id: payment.supplier_id ?? '',
             notes: payment.notes ?? payment.customer ?? '',

@@ -1,6 +1,42 @@
 import { supabase } from '../lib/supabase'
 import type { AccountType } from '../features/ops/ops'
 
+/** Expense categories accepted by the `expenses.category` CHECK constraint. */
+const EXPENSE_CATEGORIES = new Set([
+  'rent',
+  'salaries',
+  'marketing',
+  'shipping',
+  'utilities',
+  'supplies',
+  'other',
+])
+
+/** Payment methods accepted by the `method` CHECK constraint. */
+const PAYMENT_METHODS = new Set(['cash', 'card', 'transfer', 'wallet'])
+
+/** Payment directions accepted by the `payments.kind` CHECK constraint. */
+const PAYMENT_KINDS = new Set(['customer', 'supplier'])
+
+/** Journal origins accepted by the `journal_entries.source_type` constraint. */
+const JOURNAL_SOURCES = new Set([
+  'order',
+  'invoice',
+  'purchase-order',
+  'expense',
+  'payment',
+  'manual',
+])
+
+/**
+ * Normalises free-form UI values to the exact strings the CHECK constraints
+ * allow, so a save is never rejected for an unknown label.
+ */
+function oneOf(value: unknown, allowed: Set<string>, fallback: string): string {
+  const candidate = String(value ?? '').trim().toLowerCase()
+  return allowed.has(candidate) ? candidate : fallback
+}
+
 /* -------------------------------------------------------------------------- */
 /* Accounts (Chart of Accounts)                                               */
 /* -------------------------------------------------------------------------- */
@@ -69,11 +105,15 @@ export async function deleteAccount(code: string): Promise<void> {
 /* Journal Entries                                                            */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Shape of a row in `journal_entries`. The database stores the narrative as a
+ * single `memo` column (see `supabase/schema.sql`), so reads expose it as
+ * `description` for the accounting UI.
+ */
 type JournalEntryRow = {
   id: string
   entry_date: string
-  description: string
-  description_ar: string
+  memo: string
   source_type: string
   source_id: string
   lines: any[]
@@ -84,8 +124,7 @@ function toJournalEntryRow(row: Partial<JournalEntryRow>): JournalEntryRow {
   return {
     id: row.id ?? '',
     entry_date: row.entry_date ?? new Date().toISOString().split('T')[0],
-    description: row.description ?? '',
-    description_ar: row.description_ar ?? '',
+    memo: row.memo ?? '',
     source_type: row.source_type ?? '',
     source_id: row.source_id ?? '',
     lines: row.lines ?? [],
@@ -109,24 +148,29 @@ export async function fetchJournalEntries(): Promise<JournalEntryRow[]> {
 }
 
 export async function saveJournalEntry(entry: {
+  id?: string
   entry_date: string
   description: string
-  description_ar: string
   source_type: string
   source_id: string
   lines: any[]
 }): Promise<void> {
   if (!supabase) return
+  // `journal_entries.id` is a plain text primary key with no default, so an id
+  // must be supplied for inserts.
   const { error } = await supabase
     .from('journal_entries')
-    .upsert({
-      entry_date: entry.entry_date,
-      description: entry.description,
-      description_ar: entry.description_ar,
-      source_type: entry.source_type,
-      source_id: entry.source_id,
-      lines: entry.lines,
-    })
+    .upsert(
+      {
+        id: entry.id?.trim() || crypto.randomUUID(),
+        entry_date: entry.entry_date,
+        memo: entry.description,
+        source_type: oneOf(entry.source_type, JOURNAL_SOURCES, 'manual'),
+        source_id: entry.source_id,
+        lines: entry.lines,
+      },
+      { onConflict: 'id' },
+    )
   if (error) console.error('[supabase] failed to save journal entry', error.message)
 }
 
@@ -140,15 +184,18 @@ export async function deleteJournalEntry(id: string): Promise<void> {
 /* Expenses                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Row shape of `expenses`. The table uses `method` for the payment method and
+ * has no `reference`/`description_ar` columns — see `supabase/schema.sql`.
+ */
 type ExpenseRow = {
   id: string
   expense_date: string
   description: string
-  description_ar: string
   category: string
+  supplier_id: string
   amount: number
-  payment_method: string
-  reference: string
+  method: string
   notes: string
   created_at: string
 }
@@ -158,11 +205,10 @@ function toExpenseRow(row: Partial<ExpenseRow>): ExpenseRow {
     id: row.id ?? '',
     expense_date: row.expense_date ?? new Date().toISOString().split('T')[0],
     description: row.description ?? '',
-    description_ar: row.description_ar ?? '',
     category: row.category ?? 'other',
+    supplier_id: row.supplier_id ?? '',
     amount: row.amount ?? 0,
-    payment_method: row.payment_method ?? 'cash',
-    reference: row.reference ?? '',
+    method: row.method ?? 'cash',
     notes: row.notes ?? '',
     created_at: row.created_at ?? new Date().toISOString(),
   }
@@ -183,19 +229,32 @@ export async function fetchExpenses(): Promise<ExpenseRow[]> {
 }
 
 export async function saveExpense(expense: {
+  id?: string
   expense_date: string
   description: string
-  description_ar: string
   category: string
   amount: number
-  payment_method: string
-  reference: string
+  method: string
   notes: string
+  supplier_id?: string
 }): Promise<void> {
   if (!supabase) return
+  // `expenses.id` is a text primary key with no default, so generate one on insert.
   const { error } = await supabase
     .from('expenses')
-    .upsert(toExpenseRow(expense), { onConflict: 'id' })
+    .upsert(
+      {
+        id: expense.id?.trim() || crypto.randomUUID(),
+        expense_date: expense.expense_date,
+        description: expense.description,
+        category: oneOf(expense.category, EXPENSE_CATEGORIES, 'other'),
+        supplier_id: expense.supplier_id ?? '',
+        amount: expense.amount,
+        method: oneOf(expense.method, PAYMENT_METHODS, 'cash'),
+        notes: expense.notes,
+      },
+      { onConflict: 'id' },
+    )
   if (error) console.error('[supabase] failed to save expense', error.message)
 }
 
@@ -209,12 +268,17 @@ export async function deleteExpense(id: string): Promise<void> {
 /* Payments                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Row shape of `payments`. The table stores the date in `paid_at` and the
+ * payment method in `method` (see `supabase/schema.sql`).
+ */
 type PaymentRow = {
   id: string
-  payment_date: string
+  party_name: string
+  paid_at: string | null
   amount: number
   kind: string
-  payment_method: string
+  method: string
   order_id: string
   supplier_id: string
   notes: string
@@ -224,10 +288,11 @@ type PaymentRow = {
 function toPaymentRow(row: Partial<PaymentRow>): PaymentRow {
   return {
     id: row.id ?? '',
-    payment_date: row.payment_date ?? new Date().toISOString().split('T')[0],
+    party_name: row.party_name ?? '',
+    paid_at: row.paid_at ?? new Date().toISOString().split('T')[0],
     amount: row.amount ?? 0,
     kind: row.kind ?? 'customer',
-    payment_method: row.payment_method ?? 'cash',
+    method: row.method ?? 'cash',
     order_id: row.order_id ?? '',
     supplier_id: row.supplier_id ?? '',
     notes: row.notes ?? '',
@@ -240,7 +305,7 @@ export async function fetchPayments(): Promise<PaymentRow[]> {
   const { data, error } = await supabase
     .from('payments')
     .select('*')
-    .order('payment_date', { ascending: false })
+    .order('paid_at', { ascending: false, nullsFirst: false })
 
   if (error) {
     console.error('[supabase] failed to load payments', error.message)
@@ -250,18 +315,34 @@ export async function fetchPayments(): Promise<PaymentRow[]> {
 }
 
 export async function savePayment(payment: {
-  payment_date: string
+  id?: string
+  party_name?: string
+  paid_at: string
   amount: number
   kind: string
-  payment_method: string
-  order_id: string
-  supplier_id: string
-  notes: string
+  method: string
+  order_id?: string
+  supplier_id?: string
+  notes?: string
 }): Promise<void> {
   if (!supabase) return
+  // `payments.id` is a text primary key with no default, so generate one on insert.
   const { error } = await supabase
     .from('payments')
-    .upsert(toPaymentRow(payment), { onConflict: 'id' })
+    .upsert(
+      {
+        id: payment.id?.trim() || crypto.randomUUID(),
+        party_name: payment.party_name ?? '',
+        paid_at: payment.paid_at,
+        amount: payment.amount,
+        kind: oneOf(payment.kind, PAYMENT_KINDS, 'customer'),
+        method: oneOf(payment.method, PAYMENT_METHODS, 'cash'),
+        order_id: payment.order_id ?? '',
+        supplier_id: payment.supplier_id ?? '',
+        notes: payment.notes ?? '',
+      },
+      { onConflict: 'id' },
+    )
   if (error) console.error('[supabase] failed to save payment', error.message)
 }
 
