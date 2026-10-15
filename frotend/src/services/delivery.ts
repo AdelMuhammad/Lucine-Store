@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { compressImage } from '../lib/imageCompression'
 import type {
   Carrier,
   DeliveryAgent,
@@ -486,18 +487,24 @@ export async function uploadDeliveryProof(
     throw new Error('Supabase is not configured')
   }
 
-  const extension = allowedProofTypes.get(file.type)
+  // Downscale and re-encode large photos in the browser before the size check
+  // so a phone-camera shot uploads quickly and passes the bucket limit.
+  const optimized = await compressImage(file)
+
+  const extension = allowedProofTypes.get(optimized.type)
   if (!extension) throw new Error('Unsupported delivery proof image type')
-  if (file.size > MAX_DELIVERY_PROOF_BYTES) {
+  if (optimized.size > MAX_DELIVERY_PROOF_BYTES) {
     throw new Error('Delivery proof image exceeds 5 MB')
   }
 
-  const path = `orders/${orderId}/${shipmentId}/${Date.now()}.${extension}`
+  const path = `orders/${orderId}/${shipmentId}/${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}.${extension}`
   const { error } = await supabase.storage
     .from(DELIVERY_PROOFS_BUCKET)
-    .upload(path, file, {
+    .upload(path, optimized, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: optimized.type,
       upsert: false,
     })
 

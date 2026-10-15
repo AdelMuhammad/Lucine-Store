@@ -1103,6 +1103,7 @@
     "imageUrlPlaceholder": "https://...",
     "addImageUrl": "Add image",
     "uploadImages": "Upload from device",
+    "uploadCompressHint": "Large photos are resized and compressed automatically (about 200 KB) before upload.",
     "uploadingImages": "Uploading…",
     "uploadError": "Could not upload the selected images. Check your Supabase Storage configuration.",
     "removeImageAria": "Remove image {{index}}",

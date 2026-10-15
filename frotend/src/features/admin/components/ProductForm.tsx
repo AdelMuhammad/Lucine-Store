@@ -660,6 +660,7 @@ function ProductForm({
               onChange={handleFileUpload}
               type="file"
             />
+            <em className="admin-field-hint">{t('admin.uploadCompressHint')}</em>
           </label>
 
           {uploadError && <p className="admin-form-error">{uploadError}</p>}

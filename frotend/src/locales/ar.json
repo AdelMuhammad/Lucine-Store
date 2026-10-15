@@ -1103,6 +1103,7 @@
     "imageUrlPlaceholder": "https://...",
     "addImageUrl": "إضافة صورة",
     "uploadImages": "رفع من الجهاز",
+    "uploadCompressHint": "يتم تصغير الصور الكبيرة وضغطها تلقائيًا (حوالي 200 كيلوبايت) قبل الرفع.",
     "uploadingImages": "جارٍ الرفع…",
     "uploadError": "تعذّر رفع الصور المحددة. تحقق من إعداد التخزين في Supabase.",
     "removeImageAria": "حذف الصورة {{index}}",
