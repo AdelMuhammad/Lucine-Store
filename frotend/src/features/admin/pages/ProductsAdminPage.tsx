@@ -140,7 +140,7 @@ function ProductsAdminPage() {
     setPage(1)
   }
 
-  function handleSave(nextProduct: Product) {
+  async function handleSave(nextProduct: Product) {
     const isEditing = formTarget !== null && formTarget !== 'new'
     const categoryExists = categories.some(
       (category) =>
@@ -159,25 +159,35 @@ function ProductsAdminPage() {
     }
 
     if (isEditing) {
-      updateProduct(nextProduct)
+      const result = await updateProduct(nextProduct)
       setStatusMessage(
-        t('admin.productUpdated', { name: nextProduct.name }),
+        result.ok
+          ? t('admin.productUpdated', { name: nextProduct.name })
+          : t('admin.productSaveFailed', { name: nextProduct.name }),
       )
     } else {
-      addProduct(nextProduct)
-      setStatusMessage(t('admin.productAdded', { name: nextProduct.name }))
+      const result = await addProduct(nextProduct)
+      setStatusMessage(
+        result.ok
+          ? t('admin.productAdded', { name: nextProduct.name })
+          : t('admin.productSaveFailed', { name: nextProduct.name }),
+      )
     }
     setFormTarget(null)
   }
 
-  function handleDelete(product: Product) {
+  async function handleDelete(product: Product) {
     const confirmed = window.confirm(
       t('admin.deleteProductConfirm', { name: product.name }),
     )
     if (!confirmed) return
 
-    removeProduct(product.id)
-    setStatusMessage(t('admin.productDeleted', { name: product.name }))
+    const result = await removeProduct(product.id)
+    setStatusMessage(
+      result.ok
+        ? t('admin.productDeleted', { name: product.name })
+        : t('admin.productDeleteFailed', { name: product.name }),
+    )
   }
 
   return (

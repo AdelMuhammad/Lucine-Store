@@ -112,23 +112,56 @@ export async function fetchProducts(): Promise<Product[] | null> {
   return (data ?? []).map((row) => toProduct(row as ProductRow))
 }
 
-export async function createProduct(product: Product): Promise<void> {
-  if (!supabase) return
-  const { error } = await supabase.from('products').insert(toRow(product))
-  if (error) console.error('[supabase] failed to create product', error.message)
+/**
+ * Outcome of a write. `ok` is false when Supabase rejected the change (for
+ * example an RLS policy) or when the write matched no rows — PostgREST reports
+ * both as a successful empty response, so the affected rows are inspected
+ * explicitly to avoid reporting a delete/update that never happened.
+ */
+export type WriteResult = { ok: boolean; error: string }
+
+/** Treats a missing backend as success (the store stays the source of truth). */
+const NO_BACKEND: WriteResult = { ok: true, error: '' }
+
+function resultOf(error: { message: string } | null, rows: unknown[]): WriteResult {
+  if (error) {
+    console.error('[supabase] product write failed', error.message)
+    return { ok: false, error: error.message }
+  }
+  if (rows.length === 0) {
+    const message =
+      'no rows affected — the request was likely blocked by row level security'
+    console.error('[supabase] product write matched no rows', message)
+    return { ok: false, error: message }
+  }
+  return { ok: true, error: '' }
 }
 
-export async function updateProduct(product: Product): Promise<void> {
-  if (!supabase) return
-  const { error } = await supabase
+export async function createProduct(product: Product): Promise<WriteResult> {
+  if (!supabase) return NO_BACKEND
+  const { error, data } = await supabase
+    .from('products')
+    .insert(toRow(product))
+    .select('id')
+  return resultOf(error, data ?? [])
+}
+
+export async function updateProduct(product: Product): Promise<WriteResult> {
+  if (!supabase) return NO_BACKEND
+  const { error, data } = await supabase
     .from('products')
     .update(toRow(product))
     .eq('id', product.id)
-  if (error) console.error('[supabase] failed to update product', error.message)
+    .select('id')
+  return resultOf(error, data ?? [])
 }
 
-export async function deleteProduct(productId: string): Promise<void> {
-  if (!supabase) return
-  const { error } = await supabase.from('products').delete().eq('id', productId)
-  if (error) console.error('[supabase] failed to delete product', error.message)
+export async function deleteProduct(productId: string): Promise<WriteResult> {
+  if (!supabase) return NO_BACKEND
+  const { error, data } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId)
+    .select('id')
+  return resultOf(error, data ?? [])
 }

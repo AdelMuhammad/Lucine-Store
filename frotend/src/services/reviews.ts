@@ -79,11 +79,17 @@ export async function updateReview(review: ProductReview): Promise<void> {
   if (error) console.error('[supabase] failed to update review', error.message)
 }
 
-export async function deleteReview(reviewId: string): Promise<void> {
-  if (!supabase) return
-  const { error } = await supabase
+export async function deleteReview(reviewId: string): Promise<{ ok: boolean; error: string }> {
+  if (!supabase) return { ok: true, error: '' }
+  const { error, data } = await supabase
     .from('reviews')
     .delete()
     .eq('id', reviewId)
-  if (error) console.error('[supabase] failed to delete review', error.message)
+    .select('id')
+  if (error) {
+    console.error('[supabase] failed to delete review', error.message)
+    return { ok: false, error: error.message }
+  }
+  // An empty result means RLS filtered the row out — nothing was deleted.
+  return { ok: data.length > 0, error: data.length ? '' : 'no rows affected' }
 }

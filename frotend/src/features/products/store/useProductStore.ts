@@ -3,11 +3,14 @@ import type { Product } from '../data/products'
 import * as productService from '../../../services/products'
 import * as reviewService from '../../../services/reviews'
 
+/** Result of a product mutation, so callers can surface failures to the user. */
+export type ProductMutationResult = { ok: boolean; error: string }
+
 type ProductState = {
   products: Product[]
-  addProduct: (product: Product) => Promise<void> | void
-  updateProduct: (product: Product) => Promise<void> | void
-  removeProduct: (productId: string) => Promise<void> | void
+  addProduct: (product: Product) => Promise<ProductMutationResult>
+  updateProduct: (product: Product) => Promise<ProductMutationResult>
+  removeProduct: (productId: string) => Promise<ProductMutationResult>
   replaceProducts: (products: Product[]) => void
   hydrate: () => Promise<void>
 }
@@ -16,43 +19,58 @@ export const useProductStore = create<ProductState>()((set, get) => ({
       products: [],
 
       addProduct: async (product) => {
+        const previous = get().products
         set((state) => ({
           products: [...state.products, product],
         }))
-        try {
-          await productService.createProduct(product)
-        } catch (error) {
-          console.error('[supabase] failed to persist product create', error)
+        const result = await productService.createProduct(product)
+        if (!result.ok) {
+          // Roll back so the UI never shows a product that was not saved.
+          set({ products: previous })
         }
+        return result
       },
 
       updateProduct: async (product) => {
+        const previous = get().products
         set((state) => ({
           products: state.products.map((item) => (item.id === product.id ? product : item)),
         }))
-        try {
-          await productService.updateProduct(product)
-        } catch (error) {
-          console.error('[supabase] failed to persist product update', error)
-        }
+        const result = await productService.updateProduct(product)
+        if (!result.ok) set({ products: previous })
+        return result
       },
 
       removeProduct: async (productId) => {
+        const previous = get().products
         set((state) => ({
           products: state.products.filter((product) => product.id !== productId),
         }))
         try {
-          // Delete related reviews first to avoid orphaned data
+          // Delete related reviews first to avoid orphaned data.
           const reviews = await reviewService.fetchReviews()
           if (reviews) {
             const toDelete = reviews.filter((r) => r.productId === productId)
             await Promise.all(
-              toDelete.map((r) => reviewService.deleteReview(r.id).catch(() => undefined)),
+              toDelete.map(async (review) => {
+                const result = await reviewService.deleteReview(review.id)
+                if (!result.ok) {
+                  console.error('[supabase] review cascade failed', result.error)
+                }
+              }),
             )
           }
-          await productService.deleteProduct(productId)
+          const result = await productService.deleteProduct(productId)
+          if (!result.ok) {
+            // Put the product back — the row is still in Supabase.
+            set({ products: previous })
+          }
+          return result
         } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
           console.error('[supabase] failed to persist product delete', error)
+          set({ products: previous })
+          return { ok: false, error: message }
         }
       },
 

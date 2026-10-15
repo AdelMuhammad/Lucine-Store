@@ -900,6 +900,8 @@
     "productUpdated": "تم تحديث «{{name}}».",
     "productAdded": "تمت إضافة «{{name}}» إلى الكتالوج.",
     "productDeleted": "تم حذف «{{name}}».",
+    "productDeleteFailed": "تعذّر حذف «{{name}}». تأكد أنك مسجّل الدخول كمسؤول. لم يتم حذف أي شيء.",
+    "productSaveFailed": "تعذّر حفظ «{{name}}». تأكد أنك مسجّل الدخول كمسؤول.",
     "deleteProductConfirm": "حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.",
     "categoriesEyebrow": "التنظيم",
     "categoriesTitle": "الأقسام",

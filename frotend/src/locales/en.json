@@ -900,6 +900,8 @@
     "productUpdated": "“{{name}}” was updated.",
     "productAdded": "“{{name}}” was added to the catalogue.",
     "productDeleted": "“{{name}}” was deleted.",
+    "productDeleteFailed": "Could not delete “{{name}}”. You may not be signed in as an admin. Nothing was removed.",
+    "productSaveFailed": "Could not save “{{name}}”. Check that you are signed in as an admin.",
     "deleteProductConfirm": "Delete “{{name}}”? This cannot be undone.",
     "categoriesEyebrow": "ORGANISATION",
     "categoriesTitle": "Categories",
