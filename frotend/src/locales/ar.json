@@ -122,6 +122,8 @@
     "cartTitle": "حقيبة التسوّق",
     "notificationsTitle": "الإشعارات",
     "userAccountTitle": "حساب المستخدم",
+    "adminPanelTitle": "لوحة التحكم",
+    "adminPanelAria": "فتح لوحة تحكم الأدمن",
     "mainNavAria": "القائمة الرئيسية",
     "cartItemsCount": "{{count}} عنصر"
   },

@@ -295,6 +295,11 @@
   overflow: visible;
 }
 
+/* Admin-only shortcut, shown in the header only when an admin is signed in. */
+.store-action--admin {
+  color: var(--color-gold-dark, var(--color-gold));
+}
+
 .store-action__badge {
   position: absolute;
   top: 1px;

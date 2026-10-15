@@ -122,6 +122,8 @@
     "cartTitle": "Shopping cart",
     "notificationsTitle": "Notifications",
     "userAccountTitle": "User account",
+    "adminPanelTitle": "Admin panel",
+    "adminPanelAria": "Open the admin panel",
     "mainNavAria": "Main navigation",
     "cartItemsCount": "{{count}} items"
   },

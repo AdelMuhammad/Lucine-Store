@@ -7,6 +7,7 @@ import {
 } from 'react'
 import {
   AccountCircleOutlined,
+  AdminPanelSettingsOutlined,
   CampaignOutlined,
   Close,
   FavoriteBorder,
@@ -522,6 +523,16 @@ function StoreLayout({ children }: StoreLayoutProps) {
                 </section>
               )}
             </div>
+            {authStatus === 'authenticated' && authUser?.role === 'admin' && (
+              <NavLink
+                aria-label={t('header.adminPanelAria')}
+                className="store-action store-action--admin"
+                title={t('header.adminPanelTitle')}
+                to="/admin"
+              >
+                <AdminPanelSettingsOutlined />
+              </NavLink>
+            )}
             <NavLink
               aria-label={t('header.userAccountTitle')}
               className="store-action"
