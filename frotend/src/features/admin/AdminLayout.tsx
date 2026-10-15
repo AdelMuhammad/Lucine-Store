@@ -13,6 +13,7 @@ import {
   LocalOfferOutlined,
   LocalShippingOutlined,
   Logout,
+  ManageAccountsOutlined,
   MapOutlined,
   MarkEmailReadOutlined,
   Menu,
@@ -97,6 +98,7 @@ function AdminLayout() {
     { to: '/admin/ages', label: t('admin.navAges'), icon: <GroupOutlined /> },
     { to: '/admin/orders', label: t('admin.navOrders'), icon: <ReceiptLongOutlined /> },
     { to: '/admin/customers', label: t('admin.navCustomers'), icon: <PeopleAltOutlined /> },
+    { to: '/admin/users', label: t('admin.navUsers'), icon: <ManageAccountsOutlined /> },
     {
       to: '/admin/ops/suppliers',
       label: t('admin.navSuppliers'),

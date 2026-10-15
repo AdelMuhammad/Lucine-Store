@@ -37,6 +37,7 @@ export function normalizeProfile(row: Partial<AuthProfileRow> | null) {
     role: asRole(row.role),
     phone: asString(row.phone),
     birthday: asString(row.birthday),
+    createdAt: asString(row.created_at),
   }
 }
 

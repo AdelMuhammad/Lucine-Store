@@ -763,6 +763,18 @@
   white-space: nowrap;
 }
 
+.admin-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-inline-start: auto;
+}
+
+.admin-toolbar__actions .admin-toolbar__count {
+  margin-inline-start: 0;
+}
+
 .admin-table-wrap {
   overflow-x: auto;
 }
