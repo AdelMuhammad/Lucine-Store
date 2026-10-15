@@ -60,6 +60,9 @@ const AdminCustomersPage = lazy(
 const AdminUsersPage = lazy(
   () => import('./features/admin/pages/UsersAdminPage'),
 )
+const AdminUserDetailPage = lazy(
+  () => import('./features/admin/pages/UserDetailAdminPage'),
+)
 const AdminMarketingPage = lazy(
   () => import('./features/marketing/pages/MarketingDashboardPage'),
 )
@@ -385,6 +388,14 @@ function App() {
             </AdminLoader>
           }
           path="users"
+        />
+        <Route
+          element={
+            <AdminLoader>
+              <AdminUserDetailPage />
+            </AdminLoader>
+          }
+          path="users/:userId"
         />
         <Route element={<Navigate replace to="/admin/marketing/coupons" />} path="promotions" />
         <Route

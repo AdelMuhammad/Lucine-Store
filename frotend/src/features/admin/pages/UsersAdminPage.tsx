@@ -3,7 +3,9 @@ import {
   Add,
   PersonAddAlt1Outlined,
   Search,
+  VisibilityOutlined,
 } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 import { useAccountStore } from '../../account/store/useAccountStore'
 import type { AuthRole } from '../../../services/auth'
 import AdminModal from '../components/AdminModal'
@@ -241,6 +243,7 @@ function UsersAdminPage() {
                       <th>{t('admin.thRole')}</th>
                       <th>{t('admin.thOrders')}</th>
                       <th>{t('admin.thJoined')}</th>
+                      <th aria-label={t('admin.thActions')} />
                     </tr>
                   </thead>
                   <tbody>
@@ -253,7 +256,11 @@ function UsersAdminPage() {
                         <tr key={user.id}>
                           <td data-label={t('admin.thUser')}>
                             <div className="admin-table__primary">
-                              <strong>{name}</strong>
+                              <strong>
+                                <Link to={`/admin/users/${user.id}`}>
+                                  {name}
+                                </Link>
+                              </strong>
                               {user.fullName && <span>{user.email}</span>}
                             </div>
                           </td>
@@ -295,6 +302,18 @@ function UsersAdminPage() {
                                 ? date(user.createdAt, 'short')
                                 : t('common.notSet')}
                             </span>
+                          </td>
+                          <td data-label={t('admin.thActions')}>
+                            <div className="admin-table__actions">
+                              <Link
+                                aria-label={t('admin.viewUser')}
+                                className="admin-icon-btn"
+                                title={t('admin.viewUser')}
+                                to={`/admin/users/${user.id}`}
+                              >
+                                <VisibilityOutlined />
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       )
